@@ -36,6 +36,8 @@ import {
   SheetTrigger,
 } from '@/components/ui/sheet'
 import { useSidebar } from './ui/sidebar'
+import { useTranslation } from 'react-i18next'
+import { locales } from '@/i18n/types'
 
 type ConfigDrawerContextValue = {
   open: boolean
@@ -111,6 +113,7 @@ function ConfigDrawerContent() {
   const { resetDir } = useDirection()
   const { resetTheme } = useTheme()
   const { resetLayout } = useLayout()
+  const { t } = useTranslation()
 
   const handleReset = () => {
     setOpen(true)
@@ -122,9 +125,9 @@ function ConfigDrawerContent() {
   return (
     <SheetContent className='flex flex-col'>
       <SheetHeader className='pb-0 text-start'>
-        <SheetTitle>Theme Settings</SheetTitle>
+        <SheetTitle>{t('config.themeSettings')}</SheetTitle>
         <SheetDescription>
-          Adjust the appearance and layout to suit your preferences.
+          {t('config.adjustAppearance') || 'Adjust the appearance and layout to suit your preferences.'}
         </SheetDescription>
       </SheetHeader>
       <div className='space-y-6 overflow-y-auto px-4'>
@@ -132,6 +135,7 @@ function ConfigDrawerContent() {
         <SidebarConfig />
         <LayoutConfig />
         <DirConfig />
+        <LanguageConfig />
       </div>
       <SheetFooter className='gap-2'>
         <Button
@@ -139,7 +143,7 @@ function ConfigDrawerContent() {
           onClick={handleReset}
           aria-label='Reset all settings to default values'
         >
-          Reset
+          {t('config.reset')}
         </Button>
       </SheetFooter>
     </SheetContent>
@@ -241,10 +245,11 @@ function RadioGroupItem({
 
 function ThemeConfig() {
   const { defaultTheme, theme, setTheme } = useTheme()
+  const { t } = useTranslation()
   return (
     <div>
       <SectionTitle
-        title='Theme'
+        title={t('config.theme')}
         showReset={theme !== defaultTheme}
         onReset={() => setTheme(defaultTheme)}
         resetAriaLabel='Reset theme preference to default'
@@ -259,17 +264,17 @@ function ThemeConfig() {
         {[
           {
             value: 'system',
-            label: 'System',
+            label: t('config.system'),
             icon: IconThemeSystem,
           },
           {
             value: 'light',
-            label: 'Light',
+            label: t('config.light'),
             icon: IconThemeLight,
           },
           {
             value: 'dark',
-            label: 'Dark',
+            label: t('config.dark'),
             icon: IconThemeDark,
           },
         ].map((item) => (
@@ -285,10 +290,11 @@ function ThemeConfig() {
 
 function SidebarConfig() {
   const { defaultVariant, variant, setVariant } = useLayout()
+  const { t } = useTranslation()
   return (
     <div className='max-md:hidden'>
       <SectionTitle
-        title='Sidebar'
+        title={t('config.sidebar')}
         showReset={defaultVariant !== variant}
         onReset={() => setVariant(defaultVariant)}
         resetAriaLabel='Reset sidebar style to default'
@@ -303,17 +309,17 @@ function SidebarConfig() {
         {[
           {
             value: 'inset',
-            label: 'Inset',
+            label: t('config.inset'),
             icon: IconSidebarInset,
           },
           {
             value: 'floating',
-            label: 'Floating',
+            label: t('config.floating'),
             icon: IconSidebarFloating,
           },
           {
             value: 'sidebar',
-            label: 'Sidebar',
+            label: t('config.sidebar'),
             icon: IconSidebarSidebar,
           },
         ].map((item) => (
@@ -336,6 +342,7 @@ function LayoutConfig() {
     setCollapsible,
     setLayoutPreset,
   } = useLayout()
+  const { t } = useTranslation()
 
   const applyLayoutPreset = (preset: LayoutPreset) => {
     setLayoutPreset(preset)
@@ -359,7 +366,7 @@ function LayoutConfig() {
   return (
     <div className='max-md:hidden'>
       <SectionTitle
-        title='Layout'
+        title={t('config.layout')}
         showReset={layoutPreset !== defaultLayoutPreset}
         onReset={() => applyLayoutPreset(defaultLayoutPreset)}
         resetAriaLabel='Reset layout preset to default'
@@ -374,32 +381,32 @@ function LayoutConfig() {
         {[
           {
             value: 'default',
-            label: 'Default',
+            label: t('config.default'),
             icon: IconLayoutDefault,
           },
           {
             value: 'compact',
-            label: 'Compact',
+            label: t('config.compact'),
             icon: IconLayoutCompact,
           },
           {
             value: 'full',
-            label: 'Full layout',
+            label: t('config.full'),
             icon: IconLayoutFull,
           },
           {
             value: 'top-side',
-            label: 'Top side',
+            label: t('config.topSide'),
             icon: IconLayoutTopSide,
           },
           {
             value: 'top',
-            label: 'Top',
+            label: t('config.top'),
             icon: IconLayoutTop,
           },
           {
             value: 'slim-side',
-            label: 'Slim side',
+            label: t('config.slimSide'),
             icon: IconLayoutSlimSide,
           },
         ].map((item) => (
@@ -415,10 +422,11 @@ function LayoutConfig() {
 
 function DirConfig() {
   const { defaultDir, dir, setDir } = useDirection()
+  const { t } = useTranslation()
   return (
     <div>
       <SectionTitle
-        title='Direction'
+        title={t('config.direction')}
         showReset={defaultDir !== dir}
         onReset={() => setDir(defaultDir)}
         resetAriaLabel='Reset text direction to default'
@@ -433,14 +441,14 @@ function DirConfig() {
         {[
           {
             value: 'ltr',
-            label: 'Left to Right',
+            label: t('config.ltr'),
             icon: (props: SVGProps<SVGSVGElement>) => (
               <IconDir dir='ltr' {...props} />
             ),
           },
           {
             value: 'rtl',
-            label: 'Right to Left',
+            label: t('config.rtl'),
             icon: (props: SVGProps<SVGSVGElement>) => (
               <IconDir dir='rtl' {...props} />
             ),
@@ -452,6 +460,44 @@ function DirConfig() {
       <div id='direction-description' className='sr-only'>
         Choose between left-to-right or right-to-left site direction
       </div>
+    </div>
+  )
+}
+
+function LanguageConfig() {
+  const { t, i18n } = useTranslation()
+  
+  const LanguageIcon = ({ lang }: { lang: string }) => (
+    <div className='flex items-center justify-center text-2xl'>
+      {lang === 'en' && '🇺🇸'}
+      {lang === 'zh' && '🇨🇳'}
+      {lang === 'ar' && '🇸🇦'}
+    </div>
+  )
+
+  return (
+    <div>
+      <SectionTitle
+        title={t('config.language')}
+        showReset={false}
+      />
+      <Radio
+        value={i18n.language}
+        onValueChange={(lang) => i18n.changeLanguage(lang)}
+        className='grid w-full max-w-md grid-cols-3 gap-4'
+        aria-label='Select language'
+      >
+        {locales.map((item) => (
+          <RadioGroupItem 
+            key={item.code} 
+            item={{
+              value: item.code,
+              label: item.name,
+              icon: () => <LanguageIcon lang={item.code} />
+            }} 
+          />
+        ))}
+      </Radio>
     </div>
   )
 }

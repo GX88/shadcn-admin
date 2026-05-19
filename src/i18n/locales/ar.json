@@ -1,0 +1,50 @@
+{
+  "config": {
+    "themeSettings": "إعدادات المظهر",
+    "theme": "المظهر",
+    "system": "النظام",
+    "light": "فاتح",
+    "dark": "داكن",
+    "sidebar": "الشريط الجانبي",
+    "inset": "مدمج",
+    "floating": "عائم",
+    "layout": "التخطيط",
+    "default": "الافتراضي",
+    "compact": "مضغوط",
+    "full": "كامل",
+    "topSide": "أعلى وجانب",
+    "top": "أعلى",
+    "slimSide": "جانب ضيق",
+    "direction": "الاتجاه",
+    "ltr": "من اليسار إلى اليمين",
+    "rtl": "من اليمين إلى اليسار",
+    "language": "اللغة",
+    "reset": "إعادة ضبط"
+  },
+  "common": {
+    "save": "حفظ",
+    "cancel": "إلغاء",
+    "delete": "حذف",
+    "confirm": "تأكيد",
+    "loading": "جار التحميل...",
+    "error": "خطأ",
+    "success": "نجاح",
+    "update": "تحديث",
+    "reset": "إعادة ضبط"
+  },
+  "sidebar": {
+    "general": "عام",
+    "dashboard": "لوحة التحكم",
+    "tasks": "المهام",
+    "users": "المستخدمون",
+    "messages": "الرسائل",
+    "apps": "التطبيقات",
+    "helpCenter": "مركز المساعدة",
+    "settings": "الإعدادات"
+  },
+  "settings": {
+    "appearance": {
+      "updatePreferences": "تحديث التفضيلات"
+    }
+  }
+}

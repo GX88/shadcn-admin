@@ -1,4 +1,4 @@
-import { StrictMode } from 'react'
+import { StrictMode, useEffect } from 'react'
 import ReactDOM from 'react-dom/client'
 import { AxiosError } from 'axios'
 import {
@@ -13,6 +13,9 @@ import { handleServerError } from '@/lib/handle-server-error'
 import { DirectionProvider } from './context/direction-provider'
 import { FontProvider } from './context/font-provider'
 import { ThemeProvider } from './context/theme-provider'
+import { I18nextProvider, useTranslation } from 'react-i18next'
+import i18nInstance from './i18n'
+import { locales } from './i18n/types'
 // Generated Routes
 import { routeTree } from './routeTree.gen'
 // Styles
@@ -88,20 +91,38 @@ declare module '@tanstack/react-router' {
 }
 
 // Render the app
+function I18nDirectionSync() {
+  const { i18n } = useTranslation()
+  
+  useEffect(() => {
+    const currentLocale = locales.find(l => l.code === i18n.language)
+    if (currentLocale?.rtl) {
+      document.documentElement.setAttribute('dir', 'rtl')
+    } else {
+      document.documentElement.setAttribute('dir', 'ltr')
+    }
+  }, [i18n.language])
+
+  return null
+}
+
 const rootElement = document.getElementById('root')!
 if (!rootElement.innerHTML) {
   const root = ReactDOM.createRoot(rootElement)
   root.render(
     <StrictMode>
-      <QueryClientProvider client={queryClient}>
-        <ThemeProvider>
-          <FontProvider>
-            <DirectionProvider>
-              <RouterProvider router={router} />
-            </DirectionProvider>
-          </FontProvider>
-        </ThemeProvider>
-      </QueryClientProvider>
-    </StrictMode>
+      <I18nextProvider i18n={i18nInstance}>
+        <QueryClientProvider client={queryClient}>
+          <ThemeProvider>
+            <FontProvider>
+              <DirectionProvider>
+                <I18nDirectionSync />
+                <RouterProvider router={router} />
+              </DirectionProvider>
+            </FontProvider>
+          </ThemeProvider>
+        </QueryClientProvider>
+      </I18nextProvider>
+    </StrictMode>,
   )
 }

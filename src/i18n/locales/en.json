@@ -1,0 +1,50 @@
+{
+  "config": {
+    "themeSettings": "Theme Settings",
+    "theme": "Theme",
+    "system": "System",
+    "light": "Light",
+    "dark": "Dark",
+    "sidebar": "Sidebar",
+    "inset": "Inset",
+    "floating": "Floating",
+    "layout": "Layout",
+    "default": "Default",
+    "compact": "Compact",
+    "full": "Full layout",
+    "topSide": "Top side",
+    "top": "Top",
+    "slimSide": "Slim side",
+    "direction": "Direction",
+    "ltr": "Left to Right",
+    "rtl": "Right to Left",
+    "language": "Language",
+    "reset": "Reset"
+  },
+  "common": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "confirm": "Confirm",
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "update": "Update",
+    "reset": "Reset"
+  },
+  "sidebar": {
+    "general": "General",
+    "dashboard": "Dashboard",
+    "tasks": "Tasks",
+    "users": "Users",
+    "messages": "Messages",
+    "apps": "Apps",
+    "helpCenter": "Help Center",
+    "settings": "Settings"
+  },
+  "settings": {
+    "appearance": {
+      "updatePreferences": "Update preferences"
+    }
+  }
+}
