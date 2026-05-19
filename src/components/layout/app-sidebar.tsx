@@ -12,17 +12,31 @@ import { NavGroup } from './nav-group'
 import { NavUser } from './nav-user'
 import { TeamSwitcher } from './team-switcher'
 
-export function AppSidebar() {
+export function AppSidebar({
+  hideHeader = false,
+  compact = false,
+  className,
+}: {
+  hideHeader?: boolean
+  compact?: boolean
+  className?: string
+}) {
   const { collapsible, variant } = useLayout()
   return (
-    <Sidebar collapsible={collapsible} variant={variant}>
-      <SidebarHeader>
-        <TeamSwitcher teams={sidebarData.teams} />
+    <Sidebar
+      collapsible={compact ? 'icon' : collapsible}
+      variant={compact ? 'sidebar' : variant}
+      className={className}
+    >
+      {!hideHeader && (
+        <SidebarHeader>
+          <TeamSwitcher teams={sidebarData.teams} />
 
-        {/* Replace <TeamSwitch /> with the following <AppTitle />
-         /* if you want to use the normal app title instead of TeamSwitch dropdown */}
-        {/* <AppTitle /> */}
-      </SidebarHeader>
+          {/* Replace <TeamSwitch /> with the following <AppTitle />
+           /* if you want to use the normal app title instead of TeamSwitch dropdown */}
+          {/* <AppTitle /> */}
+        </SidebarHeader>
+      )}
       <SidebarContent>
         {sidebarData.navGroups.map((props) => (
           <NavGroup key={props.title} {...props} />

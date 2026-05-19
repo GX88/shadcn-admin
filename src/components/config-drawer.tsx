@@ -1,10 +1,20 @@
-import { type SVGProps } from 'react'
+import {
+  createContext,
+  type Dispatch,
+  type SetStateAction,
+  type SVGProps,
+  use,
+  useState,
+} from 'react'
 import { Root as Radio, Item } from '@radix-ui/react-radio-group'
 import { CircleCheck, RotateCcw, Settings } from 'lucide-react'
 import { IconDir } from '@/assets/custom/icon-dir'
 import { IconLayoutCompact } from '@/assets/custom/icon-layout-compact'
 import { IconLayoutDefault } from '@/assets/custom/icon-layout-default'
 import { IconLayoutFull } from '@/assets/custom/icon-layout-full'
+import { IconLayoutSlimSide } from '@/assets/custom/icon-layout-slim-side'
+import { IconLayoutTop } from '@/assets/custom/icon-layout-top'
+import { IconLayoutTopSide } from '@/assets/custom/icon-layout-top-side'
 import { IconSidebarFloating } from '@/assets/custom/icon-sidebar-floating'
 import { IconSidebarInset } from '@/assets/custom/icon-sidebar-inset'
 import { IconSidebarSidebar } from '@/assets/custom/icon-sidebar-sidebar'
@@ -13,7 +23,7 @@ import { IconThemeLight } from '@/assets/custom/icon-theme-light'
 import { IconThemeSystem } from '@/assets/custom/icon-theme-system'
 import { cn } from '@/lib/utils'
 import { useDirection } from '@/context/direction-provider'
-import { type Collapsible, useLayout } from '@/context/layout-provider'
+import { type LayoutPreset, useLayout } from '@/context/layout-provider'
 import { useTheme } from '@/context/theme-provider'
 import { Button } from '@/components/ui/button'
 import {
@@ -27,7 +37,76 @@ import {
 } from '@/components/ui/sheet'
 import { useSidebar } from './ui/sidebar'
 
+type ConfigDrawerContextValue = {
+  open: boolean
+  setOpen: Dispatch<SetStateAction<boolean>>
+}
+
+const ConfigDrawerContext = createContext<ConfigDrawerContextValue | null>(null)
+
+export function ConfigDrawerProvider({ children }: { children: React.ReactNode }) {
+  const [open, setOpen] = useState(false)
+
+  return (
+    <ConfigDrawerContext value={{ open, setOpen }}>
+      {children}
+      <ConfigDrawerSheet open={open} onOpenChange={setOpen} />
+    </ConfigDrawerContext>
+  )
+}
+
 export function ConfigDrawer() {
+  const drawer = use(ConfigDrawerContext)
+
+  if (!drawer) {
+    return <StandaloneConfigDrawer />
+  }
+
+  return <ConfigDrawerButton onClick={() => drawer.setOpen(true)} />
+}
+
+function StandaloneConfigDrawer() {
+  const [open, setOpen] = useState(false)
+
+  return (
+    <Sheet open={open} onOpenChange={setOpen}>
+      <SheetTrigger asChild>
+        <ConfigDrawerButton />
+      </SheetTrigger>
+      <ConfigDrawerContent />
+    </Sheet>
+  )
+}
+
+function ConfigDrawerButton({ onClick }: { onClick?: () => void }) {
+  return (
+    <Button
+      size='icon'
+      variant='ghost'
+      aria-label='Open theme settings'
+      className='rounded-full'
+      onClick={onClick}
+    >
+      <Settings aria-hidden='true' />
+    </Button>
+  )
+}
+
+function ConfigDrawerSheet({
+  open,
+  onOpenChange,
+}: {
+  open: boolean
+  onOpenChange: (open: boolean) => void
+}) {
+  return (
+    <Sheet open={open} onOpenChange={onOpenChange}>
+      <ConfigDrawerContent />
+    </Sheet>
+  )
+}
+
+function ConfigDrawerContent() {
   const { setOpen } = useSidebar()
   const { resetDir } = useDirection()
   const { resetTheme } = useTheme()
@@ -41,41 +120,29 @@ export function ConfigDrawer() {
   }
 
   return (
-    <Sheet>
-      <SheetTrigger asChild>
+    <SheetContent className='flex flex-col'>
+      <SheetHeader className='pb-0 text-start'>
+        <SheetTitle>Theme Settings</SheetTitle>
+        <SheetDescription>
+          Adjust the appearance and layout to suit your preferences.
+        </SheetDescription>
+      </SheetHeader>
+      <div className='space-y-6 overflow-y-auto px-4'>
+        <ThemeConfig />
+        <SidebarConfig />
+        <LayoutConfig />
+        <DirConfig />
+      </div>
+      <SheetFooter className='gap-2'>
         <Button
-          size='icon'
-          variant='ghost'
-          aria-label='Open theme settings'
-          className='rounded-full'
+          variant='destructive'
+          onClick={handleReset}
+          aria-label='Reset all settings to default values'
         >
-          <Settings aria-hidden='true' />
+          Reset
         </Button>
-      </SheetTrigger>
-      <SheetContent className='flex flex-col'>
-        <SheetHeader className='pb-0 text-start'>
-          <SheetTitle>Theme Settings</SheetTitle>
-          <SheetDescription>
-            Adjust the appearance and layout to suit your preferences.
-          </SheetDescription>
-        </SheetHeader>
-        <div className='space-y-6 overflow-y-auto px-4'>
-          <ThemeConfig />
-          <SidebarConfig />
-          <LayoutConfig />
-          <DirConfig />
-        </div>
-        <SheetFooter className='gap-2'>
-          <Button
-            variant='destructive'
-            onClick={handleReset}
-            aria-label='Reset all settings to default values'
-          >
-            Reset
-          </Button>
-        </SheetFooter>
-      </SheetContent>
-    </Sheet>
+      </SheetFooter>
+    </SheetContent>
   )
 }
 
@@ -261,34 +328,47 @@ function SidebarConfig() {
 }
 
 function LayoutConfig() {
-  const { open, setOpen } = useSidebar()
-  const { defaultCollapsible, collapsible, setCollapsible } = useLayout()
+  const { setOpen } = useSidebar()
+  const {
+    defaultCollapsible,
+    defaultLayoutPreset,
+    layoutPreset,
+    setCollapsible,
+    setLayoutPreset,
+  } = useLayout()
 
-  const radioState = open ? 'default' : collapsible
+  const applyLayoutPreset = (preset: LayoutPreset) => {
+    setLayoutPreset(preset)
+
+    if (preset === 'compact' || preset === 'slim-side') {
+      setOpen(false)
+      setCollapsible('icon')
+      return
+    }
+
+    if (preset === 'full') {
+      setOpen(false)
+      setCollapsible('offcanvas')
+      return
+    }
+
+    setOpen(true)
+    setCollapsible(defaultCollapsible)
+  }
 
   return (
     <div className='max-md:hidden'>
       <SectionTitle
         title='Layout'
-        showReset={radioState !== 'default'}
-        onReset={() => {
-          setOpen(true)
-          setCollapsible(defaultCollapsible)
-        }}
-        resetAriaLabel='Reset layout options to default'
+        showReset={layoutPreset !== defaultLayoutPreset}
+        onReset={() => applyLayoutPreset(defaultLayoutPreset)}
+        resetAriaLabel='Reset layout preset to default'
       />
       <Radio
-        value={radioState}
-        onValueChange={(v) => {
-          if (v === 'default') {
-            setOpen(true)
-            return
-          }
-          setOpen(false)
-          setCollapsible(v as Collapsible)
-        }}
+        value={layoutPreset}
+        onValueChange={(v) => applyLayoutPreset(v as LayoutPreset)}
         className='grid w-full max-w-md grid-cols-3 gap-4'
-        aria-label='Select layout style'
+        aria-label='Select layout preset'
         aria-describedby='layout-description'
       >
         {[
@@ -298,21 +378,36 @@ function LayoutConfig() {
             icon: IconLayoutDefault,
           },
           {
-            value: 'icon',
+            value: 'compact',
             label: 'Compact',
             icon: IconLayoutCompact,
           },
           {
-            value: 'offcanvas',
+            value: 'full',
             label: 'Full layout',
             icon: IconLayoutFull,
+          },
+          {
+            value: 'top-side',
+            label: 'Top side',
+            icon: IconLayoutTopSide,
+          },
+          {
+            value: 'top',
+            label: 'Top',
+            icon: IconLayoutTop,
+          },
+          {
+            value: 'slim-side',
+            label: 'Slim side',
+            icon: IconLayoutSlimSide,
           },
         ].map((item) => (
           <RadioGroupItem key={item.value} item={item} />
         ))}
       </Radio>
       <div id='layout-description' className='sr-only'>
-        Choose between default expanded, compact icon-only, or full layout mode
+        Choose between side, compact, full-width, top-side, top, or slim side layouts
       </div>
     </div>
   )
