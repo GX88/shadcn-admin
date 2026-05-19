@@ -30,14 +30,38 @@ jobs:
       - name: Build the project
         run: pnpm build
 
-      - name: Create dist tarball
+      - name: Create Release Package
         run: |
           cd dist
           tar -czvf ../shadcn-admin-dist.tar.gz .
 
-      - name: Upload dist package
+      - name: Generate timestamp
+        id: timestamp
+        run: echo "TS=$(date +'%Y%m%d-%H%M%S')" >> $GITHUB_OUTPUT
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: shadcn-admin-dist.tar.gz
+          tag_name: release-${{ steps.timestamp.outputs.TS }}
+          release_name: "Release ${{ steps.timestamp.outputs.TS }}"
+          body: |
+            ## 自动构建发布
+            
+            **构建时间**: ${{ steps.timestamp.outputs.TS }}
+            **Commit**: ${{ github.sha }}
+            **分支**: ${{ github.ref_name }}
+            
+            ### 下载说明
+            下载 `shadcn-admin-dist.tar.gz` 并解压，将解压后的文件部署到 Web 服务器即可。
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload to Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: shadcn-admin-dist
+          name: shadcn-admin-dist-${{ steps.timestamp.outputs.TS }}
           path: shadcn-admin-dist.tar.gz
           retention-days: 30
