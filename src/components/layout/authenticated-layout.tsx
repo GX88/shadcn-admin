@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Outlet } from '@tanstack/react-router'
 import { getCookie } from '@/lib/cookies'
 import { cn } from '@/lib/utils'
+import { getLayoutPresetConfig } from '@/context/layout-config'
 import { LayoutProvider, useLayout } from '@/context/layout-provider'
 import { SearchProvider } from '@/context/search-provider'
 import { ConfigDrawerProvider } from '@/components/config-drawer'
@@ -33,15 +34,17 @@ export function AuthenticatedLayout({ children }: AuthenticatedLayoutProps) {
 
 function AuthenticatedSidebarProvider({ children }: { children: React.ReactNode }) {
   const { layoutPreset } = useLayout()
-  const [open, setOpen] = useState(() => getCookie('sidebar_state') !== 'false')
-  const isSlimSide = layoutPreset === 'slim-side'
+  const layoutConfig = getLayoutPresetConfig(layoutPreset)
+  const savedOpen = getCookie('sidebar_state')
+  const defaultOpen =
+    savedOpen === undefined
+      ? (layoutConfig.sidebarState.open ?? true)
+      : savedOpen !== 'false'
+  const [open, setOpen] = useState(defaultOpen)
+  const isRail = layoutConfig.sidebarMode === 'rail'
 
   return (
-    <SidebarProvider
-      defaultOpen={open}
-      open={isSlimSide ? false : open}
-      onOpenChange={setOpen}
-    >
+    <SidebarProvider open={isRail ? false : open} onOpenChange={setOpen}>
       {children}
     </SidebarProvider>
   )
@@ -49,53 +52,55 @@ function AuthenticatedSidebarProvider({ children }: { children: React.ReactNode 
 
 function AuthenticatedLayoutShell({ children }: { children: React.ReactNode }) {
   const { layoutPreset } = useLayout()
-  const hasGlobalHeader =
-    layoutPreset === 'top-side' ||
-    layoutPreset === 'top' ||
-    layoutPreset === 'slim-side'
-  const hasSidebar = layoutPreset !== 'top'
-  const compactSidebar = layoutPreset === 'slim-side'
+  const layoutConfig = getLayoutPresetConfig(layoutPreset)
+  const hasSidebar = layoutConfig.sidebarMode !== 'none'
+  const isFrameBounded = layoutConfig.contentScroll === 'content'
 
   return (
     <>
       <SkipToMain />
-      <div className='flex h-svh w-full flex-col overflow-hidden'>
-        {hasGlobalHeader && (
+      <div
+        className={cn(
+          'flex w-full [--layout-header-height:3rem]',
+          isFrameBounded ? 'h-svh flex-col overflow-hidden' : 'min-h-svh'
+        )}
+      >
+        {layoutConfig.topHeader && (
           <Header
             global
-            showBrand
+            showBrand={layoutConfig.headerBrand}
             showSidebarTrigger={hasSidebar}
           >
             <HeaderActions />
           </Header>
         )}
-        <div className={cn('flex min-h-0 w-full flex-1', !hasGlobalHeader && 'min-h-svh')}>
+        <div
+          className={cn(
+            'flex w-full',
+            isFrameBounded ? 'min-h-0 flex-1' : 'min-h-svh'
+          )}
+        >
           {hasSidebar && (
             <AppSidebar
-              hideHeader={hasGlobalHeader}
-              compact={compactSidebar}
+              showBrand={layoutConfig.sidebarBrand}
+              mode={layoutConfig.sidebarMode}
               className={cn(
-                hasGlobalHeader &&
-                  'top-12 h-[calc(100svh-3rem)] group-data-[collapsible=offcanvas]:-inset-s-[calc(var(--sidebar-width))]'
+                layoutConfig.topHeader &&
+                  'top-(--layout-header-height) h-[calc(100svh-var(--layout-header-height))] group-data-[collapsible=offcanvas]:-inset-s-[calc(var(--sidebar-width))]'
               )}
             />
           )}
           <SidebarInset
             className={cn(
-              // Set content container, so we can use container queries
               '@container/content',
-
-              // If layout is fixed, set the height
-              // to 100svh to prevent overflow
-              'min-h-0 overflow-auto has-data-[layout=fixed]:h-full',
-
-              // If layout is fixed and sidebar is inset,
-              // set the height to 100svh - spacing (total margins) to prevent overflow
-              !hasGlobalHeader &&
+              isFrameBounded
+                ? 'min-h-0 overflow-y-auto'
+                : 'has-data-[layout=fixed]:h-svh',
+              !isFrameBounded &&
                 'peer-data-[variant=inset]:has-data-[layout=fixed]:h-[calc(100svh-(var(--spacing)*4))]',
-              hasGlobalHeader &&
-                'm-2 rounded-lg shadow-sm md:!m-2 md:!rounded-lg md:!shadow-sm',
-              layoutPreset === 'top' && 'w-full'
+              layoutConfig.contentFrame === 'inset-card' &&
+                'm-2 rounded-xl shadow-sm md:!m-2 md:!rounded-xl md:!shadow-sm',
+              layoutConfig.contentFrame === 'full' && 'w-full'
             )}
           >
             {children}

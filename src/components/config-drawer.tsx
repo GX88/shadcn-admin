@@ -23,6 +23,7 @@ import { IconThemeLight } from '@/assets/custom/icon-theme-light'
 import { IconThemeSystem } from '@/assets/custom/icon-theme-system'
 import { cn } from '@/lib/utils'
 import { useDirection } from '@/context/direction-provider'
+import { getLayoutPresetConfig } from '@/context/layout-config'
 import { type LayoutPreset, useLayout } from '@/context/layout-provider'
 import { useTheme } from '@/context/theme-provider'
 import { Button } from '@/components/ui/button'
@@ -130,7 +131,7 @@ function ConfigDrawerContent() {
           {t('config.adjustAppearance') || 'Adjust the appearance and layout to suit your preferences.'}
         </SheetDescription>
       </SheetHeader>
-      <div className='space-y-6 overflow-y-auto px-4'>
+      <div className='min-h-0 flex-1 space-y-6 overflow-y-auto px-4'>
         <ThemeConfig />
         <SidebarConfig />
         <LayoutConfig />
@@ -336,7 +337,6 @@ function SidebarConfig() {
 function LayoutConfig() {
   const { setOpen } = useSidebar()
   const {
-    defaultCollapsible,
     defaultLayoutPreset,
     layoutPreset,
     setCollapsible,
@@ -345,22 +345,11 @@ function LayoutConfig() {
   const { t } = useTranslation()
 
   const applyLayoutPreset = (preset: LayoutPreset) => {
+    const layoutConfig = getLayoutPresetConfig(preset)
+
     setLayoutPreset(preset)
-
-    if (preset === 'compact' || preset === 'slim-side') {
-      setOpen(false)
-      setCollapsible('icon')
-      return
-    }
-
-    if (preset === 'full') {
-      setOpen(false)
-      setCollapsible('offcanvas')
-      return
-    }
-
-    setOpen(true)
-    setCollapsible(defaultCollapsible)
+    setOpen(layoutConfig.sidebarState.open ?? true)
+    setCollapsible(layoutConfig.sidebarState.collapsible ?? 'icon')
   }
 
   return (
@@ -464,23 +453,22 @@ function DirConfig() {
   )
 }
 
-function LanguageConfig() {
-  const { t, i18n } = useTranslation()
-  
-  const LanguageIcon = ({ lang }: { lang: string }) => (
+function LanguageIcon({ lang }: { lang: string }) {
+  return (
     <div className='flex items-center justify-center text-2xl'>
       {lang === 'en' && '🇺🇸'}
       {lang === 'zh' && '🇨🇳'}
       {lang === 'ar' && '🇸🇦'}
     </div>
   )
+}
+
+function LanguageConfig() {
+  const { t, i18n } = useTranslation()
 
   return (
     <div>
-      <SectionTitle
-        title={t('config.language')}
-        showReset={false}
-      />
+      <SectionTitle title={t('config.language')} showReset={false} />
       <Radio
         value={i18n.language}
         onValueChange={(lang) => i18n.changeLanguage(lang)}
@@ -488,13 +476,13 @@ function LanguageConfig() {
         aria-label='Select language'
       >
         {locales.map((item) => (
-          <RadioGroupItem 
-            key={item.code} 
+          <RadioGroupItem
+            key={item.code}
             item={{
               value: item.code,
               label: item.name,
-              icon: () => <LanguageIcon lang={item.code} />
-            }} 
+              icon: () => <LanguageIcon lang={item.code} />,
+            }}
           />
         ))}
       </Radio>

@@ -9,7 +9,7 @@ export type LayoutPreset =
   | 'top-side'
   | 'top'
   | 'slim-side'
-type Variant = 'inset' | 'sidebar' | 'floating'
+export type Variant = 'inset' | 'sidebar' | 'floating'
 
 // Cookie constants following the pattern from sidebar.tsx
 const LAYOUT_COLLAPSIBLE_COOKIE_NAME = 'layout_collapsible'

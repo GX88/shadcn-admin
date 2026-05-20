@@ -1,9 +1,11 @@
+import { Link } from '@tanstack/react-router'
 import { useEffect, useState } from 'react'
-import { Command } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { getLayoutPresetConfig } from '@/context/layout-config'
 import { useLayout } from '@/context/layout-provider'
 import { Separator } from '@/components/ui/separator'
 import { SidebarTrigger } from '@/components/ui/sidebar'
+import { appBrand } from './brand'
 
 type HeaderProps = React.HTMLAttributes<HTMLElement> & {
   fixed?: boolean
@@ -24,20 +26,25 @@ export function Header({
 }: HeaderProps) {
   const [offset, setOffset] = useState(0)
   const { layoutPreset } = useLayout()
+  const layoutConfig = getLayoutPresetConfig(layoutPreset)
+  const Logo = appBrand.logo
 
   useEffect(() => {
+    if (!fixed || global) {
+      return
+    }
+
     const onScroll = () => {
       setOffset(document.body.scrollTop || document.documentElement.scrollTop)
     }
 
-    // Add scroll listener to the body
     document.addEventListener('scroll', onScroll, { passive: true })
+    onScroll()
 
-    // Clean up the event listener on unmount
     return () => document.removeEventListener('scroll', onScroll)
-  }, [])
+  }, [fixed, global])
 
-  if (!global && layoutPreset !== 'default' && layoutPreset !== 'compact' && layoutPreset !== 'full') {
+  if (!global && !layoutConfig.pageHeader) {
     return null
   }
 
@@ -77,12 +84,15 @@ export function Header({
           <Separator orientation='vertical' className='h-6' />
         )}
         {showBrand && (
-          <div className='flex shrink-0 items-center gap-2'>
-            <span className='flex size-4 items-center justify-center rounded-full bg-primary text-primary-foreground'>
-              <Command className='size-2.5' />
+          <Link
+            to='/'
+            className='flex shrink-0 items-center gap-2 rounded-md px-1.5 py-1 text-foreground transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'
+          >
+            <span className='flex size-5 items-center justify-center rounded-md bg-primary text-primary-foreground'>
+              <Logo className='size-3' />
             </span>
-            <span className='text-sm font-semibold text-foreground'>Shadcn Admin</span>
-          </div>
+            <span className='text-sm font-semibold'>{appBrand.name}</span>
+          </Link>
         )}
         {children}
       </div>
