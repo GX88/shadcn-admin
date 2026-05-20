@@ -59,47 +59,48 @@ function AuthenticatedLayoutShell({ children }: { children: React.ReactNode }) {
   return (
     <>
       <SkipToMain />
-      {hasGlobalHeader && (
-        <Header
-          global
-          fixed
-          showBrand
-          showSidebarTrigger={hasSidebar}
-        >
-          <HeaderActions />
-        </Header>
-      )}
-      <div className={cn('flex min-h-svh w-full', hasGlobalHeader && 'min-h-0 flex-1')}>
-        {hasSidebar && (
-          <AppSidebar
-            hideHeader={hasGlobalHeader}
-            compact={compactSidebar}
-            className={cn(
-              hasGlobalHeader &&
-                'top-12 h-[calc(100svh-3rem)] group-data-[collapsible=offcanvas]:-inset-s-[calc(var(--sidebar-width))]'
-            )}
-          />
+      <div className='flex h-svh w-full flex-col overflow-hidden'>
+        {hasGlobalHeader && (
+          <Header
+            global
+            showBrand
+            showSidebarTrigger={hasSidebar}
+          >
+            <HeaderActions />
+          </Header>
         )}
-        <SidebarInset
-          className={cn(
-            // Set content container, so we can use container queries
-            '@container/content',
-
-            // If layout is fixed, set the height
-            // to 100svh to prevent overflow
-            'has-data-[layout=fixed]:h-svh',
-
-            // If layout is fixed and sidebar is inset,
-            // set the height to 100svh - spacing (total margins) to prevent overflow
-            !hasGlobalHeader &&
-              'peer-data-[variant=inset]:has-data-[layout=fixed]:h-[calc(100svh-(var(--spacing)*4))]',
-            hasGlobalHeader &&
-              'min-h-[calc(100svh-3rem)] pt-12 md:!m-0 md:!rounded-none md:!shadow-none',
-            layoutPreset === 'top' && 'w-full'
+        <div className={cn('flex min-h-0 w-full flex-1', !hasGlobalHeader && 'min-h-svh')}>
+          {hasSidebar && (
+            <AppSidebar
+              hideHeader={hasGlobalHeader}
+              compact={compactSidebar}
+              className={cn(
+                hasGlobalHeader &&
+                  'top-12 h-[calc(100svh-3rem)] group-data-[collapsible=offcanvas]:-inset-s-[calc(var(--sidebar-width))]'
+              )}
+            />
           )}
-        >
-          {children}
-        </SidebarInset>
+          <SidebarInset
+            className={cn(
+              // Set content container, so we can use container queries
+              '@container/content',
+
+              // If layout is fixed, set the height
+              // to 100svh to prevent overflow
+              'min-h-0 overflow-auto has-data-[layout=fixed]:h-full',
+
+              // If layout is fixed and sidebar is inset,
+              // set the height to 100svh - spacing (total margins) to prevent overflow
+              !hasGlobalHeader &&
+                'peer-data-[variant=inset]:has-data-[layout=fixed]:h-[calc(100svh-(var(--spacing)*4))]',
+              hasGlobalHeader &&
+                'm-2 rounded-lg shadow-sm md:!m-2 md:!rounded-lg md:!shadow-sm',
+              layoutPreset === 'top' && 'w-full'
+            )}
+          >
+            {children}
+          </SidebarInset>
+        </div>
       </div>
     </>
   )

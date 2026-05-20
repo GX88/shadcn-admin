@@ -44,7 +44,7 @@ export function Header({
   return (
     <header
       className={cn(
-        global ? 'fixed inset-x-0 top-0 z-50 h-12 bg-sidebar' : 'z-50 h-16',
+        global ? 'relative z-50 h-12 shrink-0 bg-sidebar' : 'z-50 h-16',
         !global && fixed && 'header-fixed peer/header sticky top-0 w-[inherit]',
         offset > 10 && fixed
           ? global
